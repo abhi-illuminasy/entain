@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -18,7 +19,7 @@ type RacesRepo interface {
 	Init() error
 
 	// List will return a list of races.
-	List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error)
+	List(filter *racing.ListRacesRequestFilter, sort *racing.ListRacesRequestSortBy) ([]*racing.Race, error)
 }
 
 type racesRepo struct {
@@ -43,7 +44,7 @@ func (r *racesRepo) Init() error {
 	return err
 }
 
-func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race, error) {
+func (r *racesRepo) List(filter *racing.ListRacesRequestFilter, sort *racing.ListRacesRequestSortBy) ([]*racing.Race, error) {
 	var (
 		err   error
 		query string
@@ -53,6 +54,7 @@ func (r *racesRepo) List(filter *racing.ListRacesRequestFilter) ([]*racing.Race,
 	query = getRaceQueries()[racesList]
 
 	query, args = r.applyFilter(query, filter)
+	query = r.applySortBy(query, sort)
 
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
@@ -90,6 +92,35 @@ func (r *racesRepo) applyFilter(query string, filter *racing.ListRacesRequestFil
 	}
 
 	return query, args
+}
+
+func (r *racesRepo) applySortBy(query string, sort *racing.ListRacesRequestSortBy) string {
+	var (
+		orderByColumn string
+		orderByType   string
+	)
+
+	if sort == nil {
+		return query
+	}
+
+	// default sort by advertised_start_time
+	orderByColumn = "advertised_start_time"
+	// default sort by descending
+	orderByType = "DESC"
+
+	// Could be validated to make sure column exists and type is valid, skipping it for now
+	if len(sort.Column) > 0 {
+		orderByColumn = sort.Column
+	}
+
+	if len(sort.Type) > 0 {
+		orderByType = sort.Type
+	}
+
+	query += fmt.Sprintf(" ORDER BY %s %s", orderByColumn, orderByType)
+
+	return query
 }
 
 func (m *racesRepo) scanRaces(

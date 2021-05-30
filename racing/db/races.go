@@ -75,8 +75,6 @@ func (r *racesRepo) Get(id int64) (*racing.Race, error) {
 
 	query = getRaceQueries()[singleRace]
 	args = append(args, id)
-	fmt.Println(query)
-	fmt.Println(args...)
 
 	row := r.db.QueryRow(query, args...)
 

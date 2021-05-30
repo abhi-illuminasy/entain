@@ -4,5 +4,4 @@ racing/racing
 *.out
 .idea
 .vscode
-api/app.exec
-racing/app.exec
+*/app.exec

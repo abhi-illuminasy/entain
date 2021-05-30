@@ -116,6 +116,12 @@ Ideally, we'd like to see you push this repository up to Github/Gitlab/Bitbucket
 > 
 > ![](example.png)
 
+   ```bash
+   curl -X "POST" "http://localhost:8000/v1/list-sport-events" \
+      -H 'Content-Type: application/json' \
+      -d $'{}'
+   ```
+
 
 **Don't forget:**
 
